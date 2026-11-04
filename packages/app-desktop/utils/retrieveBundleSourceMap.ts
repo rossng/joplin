@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 // then caches that copy for the lifetime of the process. Our bundles always have a sibling .map file.
 const retrieveBundleSourceMap = (source: string) => {
 	if (!source.endsWith('.bundle.js')) return null;
-	const path = source.startsWith('file://') ? fileURLToPath(source) : source;
 	try {
+		const path = source.startsWith('file://') ? fileURLToPath(source) : source;
 		return { url: `${source}.map`, map: readFileSync(`${path}.map`, 'utf8') };
 	} catch (error) {
 		return null;

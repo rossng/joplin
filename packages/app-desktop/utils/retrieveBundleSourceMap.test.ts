@@ -8,7 +8,8 @@ describe('retrieveBundleSourceMap', () => {
 	let tempDir: string;
 
 	beforeEach(async () => {
-		tempDir = await mkdtemp(join(tmpdir(), 'retrieveBundleSourceMap-'));
+		// The space checks that file:// URLs are decoded before being read
+		tempDir = await mkdtemp(join(tmpdir(), 'retrieve bundle source map-'));
 		// No main.bundle.js: the bundle itself must never be read
 		await writeFile(join(tempDir, 'main.bundle.js.map'), '{"version":3}');
 		await writeFile(join(tempDir, 'other.js'), '//# sourceMappingURL=other.js.map');
@@ -28,9 +29,10 @@ describe('retrieveBundleSourceMap', () => {
 	});
 
 	test.each([
-		'other.js',
-		'missing.bundle.js',
-	])('should defer to the default handler for %s', (fileName) => {
-		expect(retrieveBundleSourceMap(join(tempDir, fileName))).toBeNull();
+		{ toSource: () => join(tempDir, 'other.js') },
+		{ toSource: () => join(tempDir, 'missing.bundle.js') },
+		{ toSource: () => 'file://example.com/main.bundle.js' },
+	])('should defer to the default handler when there is no sibling bundle map (%#)', ({ toSource }) => {
+		expect(retrieveBundleSourceMap(toSource())).toBeNull();
 	});
 });
